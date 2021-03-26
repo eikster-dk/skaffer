@@ -1,0 +1,58 @@
+template: repo-url
+tag: v1.0.0
+
+values:
+  gitLocation: src/domain/service-a/git.json
+  registry: xxx.dkr.ecr.eu-central-1.amazonaws.com
+  region: eu-central-1
+  sln: ./src/domain.sln
+
+  services:
+    - name: service-a
+      src: src/service-a.Api
+      csproj: src/service-a.Api/service-a.Api.csproj
+      output: src/service-a.Api/publish/
+      image: eikc/service-a-api
+
+    - name: service-a-migrations
+      src: src/service-a/DbMigrations
+      csproj: src/service-a/DbMigrations/DbMigrations.csproj
+      output: src/service-a./DbMigrations/publish/
+      image: eikc/service-a-migration
+
+  kustomize:
+    deployments:
+      - name: service-a
+        test:
+          replicas: 1
+          vault_addr: http://vault.vault:8200
+          vault_role: backend-test
+          vault_mount: test
+        staging:
+          replicas: 1
+          vault_addr: http://vault.vault:8200
+          vault_role: backend-staging
+          vault_mount: staging
+        prod:
+          replicas: 3
+          vault_addr: http://vault.vault:8200
+          vault_role: backend-production
+          vault_mount: production
+        init:
+          - name: migrations
+            image: eikc/service-a-migrations
+        containers:
+          - name: service-a-api
+            image: eikc/service-a-api
+            test:
+              replicas: 1
+              cpu: 200m
+              memory: 128Mi
+            staging:
+              replicas: 1
+              cpu: 200m
+              memory: 128Mi
+            prod:
+              replicas: 3
+              cpu: 200m
+              memory: 256Mi

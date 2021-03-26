@@ -1,0 +1,45 @@
+{{ range .kustomize.deployments -}}
+{{ $env := .staging -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.name}}
+spec:
+  replicas: {{ $env.replicas }}
+  template:
+    spec:
+      initContainers:
+      {{ range .init }}
+        - name: {{ .name }}
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Test
+            - name: VAULT_ADDR
+              value: {{ $env.vault_addr }}
+            - name: VAULT_ROLE
+              value: {{ $env.vault_role }}
+            - name: VAULT_MOUNT
+              value: {{ $env.vault_mount }}
+      {{ end }}
+      containers:
+      {{ range .containers }}
+        - name: {{ .name }}
+          resources:
+            requests:
+              memory: {{ .test.memory}}
+              cpu: {{ .test.cpu }}
+            limits:
+              memory: {{ .test.memory}}
+              cpu: {{ .test.cpu }}
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Test
+            - name: VAULT_ADDR
+              value: {{ $env.vault_addr }}
+            - name: VAULT_ROLE
+              value: {{ $env.vault_role }}
+            - name: VAULT_MOUNT
+              value: {{ $env.vault_mount }}
+      {{- end }}
+---
+{{- end}}
