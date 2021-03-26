@@ -30,8 +30,8 @@ type repository struct {
 }
 
 type skaffer struct {
-	Template repository
-	Values   map[string]interface{}
+	Repository repository
+	Template   map[string]interface{}
 }
 
 func run() error {
@@ -46,7 +46,7 @@ func run() error {
 	var templates []structure
 
 	_, err = git.PlainClone("./.template", false, &git.CloneOptions{
-		URL:      skafferTemplate.Template.Repo,
+		URL:      skafferTemplate.Repository.Repo,
 		Progress: os.Stdout,
 	})
 	if err != nil {
@@ -102,7 +102,7 @@ func run() error {
 
 		defer f.Close()
 
-		err = item.tmpl.Execute(f, skafferTemplate.Values)
+		err = item.tmpl.Execute(f, skafferTemplate.Template)
 		if err != nil {
 			return err
 		}
