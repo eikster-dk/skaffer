@@ -50,9 +50,7 @@ jobs:
       - name: publish
         run: |
           echo "$GITHUB_SHA" > src/domain/service-a/git.json
-          
           dotnet publish --no-build -o src/service-a.Api/publish/ -c Release src/service-a.Api/service-a.Api.csproj
-          
           dotnet publish --no-build -o src/service-a./DbMigrations/publish/ -c Release src/service-a/DbMigrations/DbMigrations.csproj
           
 
@@ -65,7 +63,7 @@ jobs:
 
       - name: ECR login
         uses: aws-actions/amazon-ecr-login@v1
-
+        
       
       - name: build docker - service-a
         run: |

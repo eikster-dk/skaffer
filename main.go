@@ -1,14 +1,15 @@
 package main
 
 import (
+	"html/template"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
+	"github.com/go-git/go-git/v5"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,21 +24,47 @@ type structure struct {
 	tmpl *template.Template
 }
 
+type repository struct {
+	Repo    string
+	Version string
+}
+
+type skaffer struct {
+	Template repository
+	Values   map[string]interface{}
+}
+
 func run() error {
 	b, err := ioutil.ReadFile(".skaffer.yaml")
 	if err != nil {
 		return err
 	}
-	data := make(map[string]interface{})
-	yaml.Unmarshal(b, &data)
+
+	var skafferTemplate skaffer
+	yaml.Unmarshal(b, &skafferTemplate)
 
 	var templates []structure
 
-	err = filepath.Walk("./tmpl", func(path string, info fs.FileInfo, err error) error {
+	_, err = git.PlainClone("./.template", false, &git.CloneOptions{
+		URL:      skafferTemplate.Template.Repo,
+		Progress: os.Stdout,
+	})
+	if err != nil {
+
+		return err
+	}
+	defer func() {
+		os.RemoveAll("./.template")
+	}()
+
+	err = filepath.Walk(".template", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
+			return nil
+		}
+		if strings.Contains(path, ".git") {
 			return nil
 		}
 
@@ -47,7 +74,7 @@ func run() error {
 		}
 
 		item := structure{
-			path: strings.TrimPrefix(path, "tmpl/"),
+			path: strings.TrimPrefix(path, ".template/"),
 			tmpl: tmpl,
 		}
 
@@ -75,7 +102,7 @@ func run() error {
 
 		defer f.Close()
 
-		err = item.tmpl.Execute(f, data["values"])
+		err = item.tmpl.Execute(f, skafferTemplate.Values)
 		if err != nil {
 			return err
 		}

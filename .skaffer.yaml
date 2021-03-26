@@ -1,5 +1,6 @@
-template: repo-url
-version: master
+template:
+  repo: https://github.com/eikc/skaffer-template
+  version: main
 
 values:
   gitLocation: src/domain/service-a/git.json
