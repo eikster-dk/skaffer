@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+spec:
+  replicas: 1
+  template:
+    spec:
+      initContainers:
+      
+        - name: migrations
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Test
+            - name: VAULT_ADDR
+              value: http://vault.vault:8200
+            - name: VAULT_ROLE
+              value: backend-test
+            - name: VAULT_MOUNT
+              value: test
+      
+      containers:
+      
+        - name: service-a-api
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 200m
+            limits:
+              memory: 128Mi
+              cpu: 200m
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Test
+            - name: VAULT_ADDR
+              value: http://vault.vault:8200
+            - name: VAULT_ROLE
+              value: backend-test
+            - name: VAULT_MOUNT
+              value: test
+---
