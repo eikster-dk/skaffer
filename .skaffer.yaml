@@ -1,5 +1,5 @@
 template: repo-url
-tag: v1.0.0
+version: master
 
 values:
   gitLocation: src/domain/service-a/git.json
