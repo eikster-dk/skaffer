@@ -5,10 +5,6 @@ import (
 )
 
 var (
-	// Used for flags.
-	cfgFile     string
-	userLicense string
-
 	rootCmd = &cobra.Command{
 		Use:   "skaffer",
 		Short: "A scaffolding application for similiar micro service based applications",
